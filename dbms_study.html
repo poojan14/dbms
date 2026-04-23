@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBMS Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --card: #12121a;
+  --border: #1e1e2e;
+  --accent1: #7c3aed;
+  --accent2: #06b6d4;
+  --accent3: #f59e0b;
+  --accent4: #10b981;
+  --accent5: #ef4444;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --highlight: #a78bfa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(6,182,212,0.06) 0%, transparent 60%);
+  pointer-events: none; z-index: 0;
+}
+
+/* HEADER */
+header {
+  position: relative; z-index: 10;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(10,10,15,0.8); backdrop-filter: blur(12px);
+  position: sticky; top: 0;
+}
+.logo { font-size: 22px; font-weight: 800; color: var(--highlight); letter-spacing: -1px; }
+.logo span { color: var(--accent2); }
+.progress-bar {
+  flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  border-radius: 99px; transition: width 0.5s ease;
+}
+.score-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 13px; color: var(--accent3);
+  background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25);
+  padding: 4px 12px; border-radius: 99px;
+}
+
+/* MAIN LAYOUT */
+.container { max-width: 900px; margin: 0 auto; padding: 32px 20px; position: relative; z-index: 1; }
+
+/* MODULE GRID */
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative; overflow: hidden;
+}
+.module-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--accent-color, var(--accent1));
+}
+.module-card:hover { transform: translateY(-3px); border-color: rgba(124,58,237,0.4); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+.module-card.done { opacity: 0.6; }
+.module-card.done::after { content: '✓'; position: absolute; top: 12px; right: 14px; color: var(--accent4); font-size: 18px; font-weight: 800; }
+.module-icon { font-size: 28px; margin-bottom: 10px; }
+.module-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.module-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.module-count { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent2); margin-top: 10px; }
+
+/* LESSON VIEW */
+.lesson-view { display: none; }
+.lesson-view.active { display: block; }
+.home-view.hidden { display: none; }
+
+.lesson-header {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 28px;
+}
+.back-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600; transition: all 0.2s;
+}
+.back-btn:hover { background: var(--border); }
+.lesson-title { font-size: 22px; font-weight: 800; }
+
+/* CONTENT CARDS */
+.content-section {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px; margin-bottom: 16px;
+  animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.section-tag {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+  background: rgba(124,58,237,0.2); color: var(--highlight);
+  border: 1px solid rgba(124,58,237,0.3);
+}
+.section-heading { font-size: 19px; font-weight: 800; margin-bottom: 10px; }
+.section-body { font-size: 14px; line-height: 1.8; color: #c4cee0; }
+.section-body strong { color: var(--accent2); font-weight: 700; }
+
+.analogy-box {
+  background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 12px; padding: 16px; margin-top: 14px;
+  font-size: 13px; line-height: 1.7;
+}
+.analogy-box .label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--accent3); margin-bottom: 6px; }
+
+.comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.cmp-col { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 14px; }
+.cmp-col h4 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.cmp-col ul { font-size: 12px; color: #9ca3af; line-height: 1.9; padding-left: 16px; }
+
+.type-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 10px; border-radius: 99px; margin: 3px 2px;
+}
+
+/* QUIZ SECTION */
+.quiz-section {
+  background: var(--card); border: 2px solid rgba(124,58,237,0.3);
+  border-radius: 16px; padding: 24px; margin-top: 24px;
+}
+.quiz-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--accent1); margin-bottom: 12px; }
+.quiz-q { font-size: 16px; font-weight: 700; margin-bottom: 16px; line-height: 1.5; }
+.quiz-options { display: grid; gap: 10px; }
+.quiz-opt {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px; cursor: pointer;
+  font-size: 13px; font-family: 'Syne', sans-serif; font-weight: 600;
+  color: var(--text); text-align: left; transition: all 0.2s;
+}
+.quiz-opt:hover:not(:disabled) { background: rgba(124,58,237,0.12); border-color: var(--accent1); }
+.quiz-opt.correct { background: rgba(16,185,129,0.15); border-color: var(--accent4); color: #6ee7b7; }
+.quiz-opt.wrong { background: rgba(239,68,68,0.12); border-color: var(--accent5); color: #fca5a5; }
+.quiz-opt:disabled { cursor: default; }
+.quiz-feedback {
+  margin-top: 14px; font-size: 13px; line-height: 1.6; padding: 12px;
+  border-radius: 8px; display: none;
+}
+.quiz-feedback.show { display: block; }
+.quiz-feedback.ok { background: rgba(16,185,129,0.1); color: #6ee7b7; }
+.quiz-feedback.no { background: rgba(239,68,68,0.1); color: #fca5a5; }
+.next-btn {
+  margin-top: 14px; display: none; background: var(--accent1); color: white;
+  border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+  transition: all 0.2s;
+}
+.next-btn.show { display: inline-block; }
+.next-btn:hover { background: #6d28d9; transform: scale(1.02); }
+
+/* FLIP CARD */
+.flip-deck { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.flip-card {
+  width: 100%; height: 100px;
+  perspective: 1000px; cursor: pointer;
+}
+.flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+}
+.flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-front, .flip-back {
+  position: absolute; width: 100%; height: 100%;
+  backface-visibility: hidden; border-radius: 12px; padding: 16px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 13px; font-weight: 600;
+}
+.flip-front {
+  background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.25);
+  color: var(--highlight);
+}
+.flip-back {
+  background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.25);
+  color: var(--accent2); transform: rotateY(180deg);
+  font-size: 12px; line-height: 1.6;
+}
+.flip-hint { font-size: 10px; color: var(--muted); text-align: center; margin-top: 6px; margin-bottom: 10px; }
+
+/* FORMULA BOX */
+.formula-box {
+  background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 10px; padding: 14px; margin: 12px 0;
+  font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent2);
+  line-height: 1.8;
+}
+
+/* TIMELINE */
+.timeline { margin-top: 14px; }
+.tl-item {
+  display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start;
+}
+.tl-dot {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; background: var(--accent1); color: white;
+}
+.tl-text { font-size: 13px; color: #c4cee0; line-height: 1.6; padding-top: 4px; }
+.tl-text strong { color: var(--text); }
+
+/* COMPLETE MESSAGE */
+.complete-msg {
+  text-align: center; padding: 40px 20px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+  display: none;
+}
+.complete-msg.show { display: block; animation: fadeUp 0.5s ease; }
+.complete-msg h2 { font-size: 28px; font-weight: 800; color: var(--accent3); margin-bottom: 10px; }
+.complete-msg p { color: var(--muted); font-size: 14px; }
+
+/* SECTION NAV */
+.section-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.snav-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--muted);
+  padding: 6px 14px; border-radius: 99px; cursor: pointer; font-size: 12px; font-weight: 600;
+  font-family: 'Syne', sans-serif; transition: all 0.2s;
+}
+.snav-btn.active { background: var(--accent1); border-color: var(--accent1); color: white; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">DBMS<span>Master</span></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="score-badge">⭐ <span id="scoreDisplay">0</span> pts</div>
+</header>
+
+<div class="container">
+
+  <!-- HOME VIEW -->
+  <div class="home-view" id="homeView">
+    <div style="margin-bottom:28px;">
+      <h1 style="font-size:28px;font-weight:800;margin-bottom:6px;">Your DBMS Study Hub</h1>
+      <p style="color:var(--muted);font-size:14px;">7 modules · interactive lessons · quizzes · flip cards</p>
+    </div>
+    <div class="module-grid" id="moduleGrid"></div>
+  </div>
+
+  <!-- LESSON VIEW -->
+  <div class="lesson-view" id="lessonView">
+    <div class="lesson-header">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="lesson-title" id="lessonTitle"></div>
+    </div>
+    <div class="section-nav" id="sectionNav"></div>
+    <div id="lessonContent"></div>
+  </div>
+
+</div>
+
+<script>
+let score = 0;
+let completedModules = new Set();
+let currentModule = null;
+let currentSectionIdx = 0;
+
+const modules = [
+  {
+    id: 'intent',
+    icon: '🔒',
+    title: 'Intent Locking',
+    desc: 'Hierarchical locks for multi-level transaction safety',
+    color: '#7c3aed',
+    sections: [
+      {
+        title: 'What is Intent Locking?',
+        tag: 'Concept',
+        content: `<p>When a transaction wants to lock a <strong>specific row</strong> in a table, the database must make sure no other transaction has locked the entire table in a conflicting way.</p>
+        <p style="margin-top:10px;">Instead of checking every single row (which is slow!), we use <strong>Intent Locks</strong> to signal our plans upfront — like reserving a seat before boarding.</p>`,
+        analogy: '🏨 Think of a hotel: before cleaning room 302, a housekeeper puts a sign on the FLOOR, not just the room. This tells the manager "someone is working on floor 3" without checking every room door.',
+        cards: [
+          { front: 'IS Lock', back: 'Intent Shared — I plan to READ some rows in this table. Others can still read too!' },
+          { front: 'IX Lock', back: 'Intent Exclusive — I plan to UPDATE/DELETE some rows. Signals exclusive intent.' },
+          { front: 'SIX Lock', back: 'Shared + Intent Exclusive — I\'m reading the whole table BUT updating some rows too.' },
+        ],
+        quiz: {
+          q: 'A transaction wants to update 3 rows in a table. Which intent lock does it place on the TABLE first?',
+          opts: ['IS (Intent Shared)', 'IX (Intent Exclusive)', 'SIX (Shared + Intent Exclusive)', 'No lock needed'],
+          ans: 1,
+          feedback: '✅ Correct! IX (Intent Exclusive) is placed at the table level when you plan to exclusively lock rows below. This warns other transactions not to lock the whole table exclusively.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'security',
+    icon: '🛡️',
+    title: 'Data Security & Integrity',
+    desc: 'Access control, encryption, and authentication',
+    color: '#06b6d4',
+    sections: [
+      {
+        title: 'Security vs Integrity',
+        tag: 'Core Concepts',
+        content: `<p><strong>Security</strong> = WHO can access the data (authorization, passwords, permissions)</p>
+        <p style="margin-top:8px;"><strong>Integrity</strong> = Is the data CORRECT and VALID? (constraints, rules, checks)</p>`,
+        analogy: '🏦 Security is the bank vault door — only authorized people enter. Integrity is the bank\'s accounting rules — the numbers must always balance correctly.',
+        comparison: {
+          left: { title: '🔐 Security', items: ['Controls WHO accesses data', 'Uses passwords & auth', 'Prevents unauthorized users', 'Examples: GRANT, REVOKE'] },
+          right: { title: '✅ Integrity', items: ['Controls if data is VALID', 'Uses PK, FK, CHECK constraints', 'Prevents bad/corrupt data', 'Examples: NOT NULL, UNIQUE'] }
+        },
+        quiz: {
+          q: 'A student submits age = -5 in a form. Which concept prevents this invalid data from being stored?',
+          opts: ['Data Security', 'Data Integrity', 'Authentication', 'Authorization'],
+          ans: 1,
+          feedback: '✅ Data Integrity! A CHECK constraint like CHECK(age > 0) validates that data is correct and meaningful — this is about correctness, not access control.'
+        }
+      },
+      {
+        title: 'Authentication vs Authorization',
+        tag: 'Access Control',
+        content: `<p><strong>Authentication</strong> = Verifying WHO you are (login with username + password)</p>
+        <p style="margin-top:8px;"><strong>Authorization</strong> = Verifying WHAT you are allowed to do (can you see this file?)</p>`,
+        analogy: '✈️ At an airport: showing your passport is AUTHENTICATION (proving who you are). Your boarding pass that says "Seat 14A, Economy" is AUTHORIZATION (what you\'re allowed to do/access).',
+        quiz: {
+          q: 'When you log into Gmail with your email and password, that\'s ___. When Gmail lets you read your inbox but not someone else\'s, that\'s ___.',
+          opts: ['Authorization, Authentication', 'Authentication, Authorization', 'Encryption, Hashing', 'Integrity, Security'],
+          ans: 1,
+          feedback: '✅ Login = Authentication (proving identity). Accessing only YOUR inbox = Authorization (what you\'re permitted to do).'
+        }
+      },
+      {
+        title: 'Data Encryption',
+        tag: 'Encryption',
+        content: `<p><strong>Encryption</strong> = Converting readable data (plaintext) into scrambled form (ciphertext) using a key. Only someone with the correct key can decrypt it back.</p>
+        <p style="margin-top:10px;">Two main types:</p>
+        <p style="margin-top:8px;"><strong>Symmetric</strong>: Same key to encrypt AND decrypt. Fast! (like a house key that locks and unlocks)</p>
+        <p style="margin-top:6px;"><strong>Asymmetric</strong>: Public key encrypts, Private key decrypts. Slower but more secure. (like a mailbox — anyone can put mail IN, only you have the key to take it OUT)</p>`,
+        quiz: {
+          q: 'Which type of encryption uses the SAME key for both encrypting and decrypting?',
+          opts: ['Asymmetric (Public Key)', 'Symmetric (Private Key)', 'Hash encryption', 'SSL encryption'],
+          ans: 1,
+          feedback: '✅ Symmetric (Private Key) encryption! Same key is shared by sender and receiver. It\'s faster but the challenge is securely sharing that one key.'
+        }
+      },
+      {
+        title: 'Access Control Methods',
+        tag: 'DAC · MAC · RBAC',
+        content: `<p><strong>DAC (Discretionary)</strong>: The data owner decides who gets access. Like sharing your Google Doc with specific people.</p>
+        <p style="margin-top:8px;"><strong>MAC (Mandatory)</strong>: System decides based on clearance levels (Top Secret > Secret > Confidential > Unclassified). Military-style — you can only read at/below your clearance.</p>
+        <p style="margin-top:8px;"><strong>RBAC (Role-Based)</strong>: Access based on your JOB ROLE. A nurse sees patient data; a cashier doesn't need patient data.</p>
+        <p style="margin-top:10px;">SQL uses <code style="color:var(--accent2);">GRANT privilege ON object TO user</code> and <code style="color:var(--accent2);">REVOKE privilege ON object FROM user</code></p>`,
+        quiz: {
+          q: 'A company gives all "Managers" access to salary data automatically. New managers get access when promoted, old ones lose it when demoted. This is:',
+          opts: ['DAC (Discretionary)', 'MAC (Mandatory)', 'RBAC (Role-Based)', 'Encryption-based'],
+          ans: 2,
+          feedback: '✅ RBAC! Access is tied to the ROLE (Manager), not the individual. When someone\'s role changes, their access automatically changes too.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'ids',
+    icon: '👁️',
+    title: 'Intrusion Detection',
+    desc: 'IDS methods and examples',
+    color: '#ef4444',
+    sections: [
+      {
+        title: 'Intrusion Detection System (IDS)',
+        tag: 'Security',
+        content: `<p>An IDS monitors network traffic or system activity for <strong>unauthorized or suspicious behavior</strong> and alerts administrators.</p>
+        <p style="margin-top:10px;">Two detection approaches:</p>
+        <p style="margin-top:8px;"><strong>Signature-Based</strong>: Has a database of known attack patterns. If traffic matches → alert! (Like antivirus matching virus signatures)</p>
+        <p style="margin-top:8px;"><strong>Behavior-Based (Anomaly)</strong>: Learns what's "normal" and alerts when something deviates. Can catch NEW/unknown attacks!</p>
+        <p style="margin-top:12px;">Two deployment types:<br>
+        <strong>NIDS</strong> (Network IDS) — monitors all network traffic<br>
+        <strong>HIDS</strong> (Host IDS) — installed on specific devices, monitors that device</p>`,
+        analogy: '🐕 Signature-based is like a guard dog trained to recognize specific criminals by face. Behavior-based is like a guard dog that barks at ANYTHING unusual — even unknown intruders.',
+        quiz: {
+          q: 'A new virus has never been seen before. Which IDS method is MORE LIKELY to detect it?',
+          opts: ['Signature-Based IDS', 'Behavior-Based (Anomaly) IDS', 'Both are equally good', 'Neither can detect new viruses'],
+          ans: 1,
+          feedback: '✅ Behavior-Based! Since signature-based needs a known pattern in its database, it would miss brand-new viruses. Anomaly detection notices unusual behavior even without prior knowledge of the threat.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'qprocessing',
+    icon: '⚙️',
+    title: 'Query Processing',
+    desc: 'How SQL queries become results',
+    color: '#10b981',
+    sections: [
+      {
+        title: 'What is Query Processing?',
+        tag: 'Foundation',
+        content: `<p>You write SQL in a <strong>high-level language</strong>. But the database needs to figure out the most efficient way to actually get that data.</p>
+        <p style="margin-top:10px;">Query Processing = <strong>transforming your SQL into an efficient execution strategy</strong> (expressed in Relational Algebra), then executing it.</p>`,
+        analogy: '🗺️ You tell your GPS "take me to the airport." You don\'t specify which roads — the GPS figures out the best ROUTE. Similarly, you write SQL and the DBMS finds the best execution plan.',
+        quiz: {
+          q: 'What is the main goal of Query Processing?',
+          opts: ['To store data efficiently', 'To transform high-level SQL into an efficient execution strategy', 'To encrypt query results', 'To prevent unauthorized access'],
+          ans: 1,
+          feedback: '✅ Exactly! Query processing takes your declarative SQL (WHAT you want) and finds the most efficient HOW — the execution plan.'
+        }
+      },
+      {
+        title: 'Steps in Query Processing',
+        tag: 'Pipeline',
+        content: ``,
+        timeline: [
+          { n: '1', label: 'SQL Query', text: 'You write a declarative SQL statement' },
+          { n: '2', label: 'Parser', text: 'Checks syntax & validates table/column names' },
+          { n: '3', label: 'Translator', text: 'Converts parse tree → Relational Algebra expression' },
+          { n: '4', label: 'Optimizer', text: 'Generates multiple plans, picks the one with LOWEST COST' },
+          { n: '5', label: 'Execution Plan', text: 'The chosen optimal relational algebra plan' },
+          { n: '6', label: 'Evaluation Engine', text: 'Executes the plan, accesses storage via buffer manager' },
+          { n: '7', label: 'Result Output', text: 'Tuples returned to the user/application' },
+        ],
+        quiz: {
+          q: 'Which component CHOOSES the best execution plan by comparing cost estimates?',
+          opts: ['Parser', 'Translator', 'Optimizer', 'Evaluation Engine'],
+          ans: 2,
+          feedback: '✅ The Optimizer! It generates multiple equivalent relational algebra plans and picks the one with the lowest estimated cost (usually measured in disk I/O).'
+        }
+      },
+      {
+        title: 'Measuring Query Cost',
+        tag: 'Cost Model',
+        content: `<p>The dominant cost factor is <strong>disk I/O</strong> (reading/writing blocks). RAM is 5–6 orders of magnitude faster than disk, so minimizing disk access is the priority.</p>`,
+        formula: 'Total Cost = tT × (# block transfers) + tS × (# seeks)\ntT = time to transfer one block\ntS = time for one disk seek',
+        quiz: {
+          q: 'Why is disk I/O the most important cost factor in query processing?',
+          opts: ['Disk is cheaper than RAM', 'Disk access is 5–6 orders of magnitude SLOWER than RAM', 'Disk can store more data', 'CPU calculations are free'],
+          ans: 1,
+          feedback: '✅ Disk I/O is catastrophically slow compared to RAM. A query that minimizes disk reads/writes will run dramatically faster, even if it does more CPU work.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'qopt',
+    icon: '🚀',
+    title: 'Query Optimization',
+    desc: 'Selection algorithms, sorting, and join strategies',
+    color: '#f59e0b',
+    sections: [
+      {
+        title: 'Selection Algorithms',
+        tag: 'Algorithms',
+        content: `<p><strong>Linear Search</strong>: Scan every block and check every record. Cost = <code style="color:var(--accent2);">br</code> block transfers. Works always, but slow for large tables.</p>
+        <p style="margin-top:10px;"><strong>Binary Search</strong>: Only works if data is sorted on the search attribute. Cost = <code style="color:var(--accent2);">⌈log₂(br)⌉</code>. Much faster!</p>`,
+        analogy: '📖 Linear search = reading every page of a book looking for "apple." Binary search = using the sorted index — open to middle, too late? go to first half, repeat.',
+        formula: 'Linear Search: br block transfers\nBinary Search: ⌈log₂(br)⌉ block transfers\nbr = number of blocks containing records',
+        quiz: {
+          q: 'A table has 1024 blocks. How many block accesses does Binary Search need (worst case)?',
+          opts: ['1024', '512', '10', '100'],
+          ans: 2,
+          feedback: '✅ log₂(1024) = 10! Binary search is exponentially faster than linear (1024). This is why sorted indexes are so powerful.'
+        }
+      },
+      {
+        title: 'Pipelining vs Materialization',
+        tag: 'Evaluation',
+        content: `<p>When evaluating complex expressions with multiple operations, results must flow between operators.</p>`,
+        comparison: {
+          left: { title: '🔄 Pipelining', items: ['Results flow directly operator→operator', 'No disk writes between steps', 'Memory efficient', 'Can\'t pipeline: sort, hash join (need all data first)'] },
+          right: { title: '💾 Materialization', items: ['Write intermediate results to temp disk', 'Next operator reads from that file', 'More predictable, handles large intermediate results', 'Extra cost: bi reads + bi writes per step'] }
+        },
+        quiz: {
+          q: 'Which evaluation method AVOIDS writing intermediate results to disk?',
+          opts: ['Materialization', 'Pipelining', 'Both write to disk', 'Neither processes intermediates'],
+          ans: 1,
+          feedback: '✅ Pipelining! Tuples flow directly from one operator to the next without disk writes. This significantly reduces I/O cost — the biggest bottleneck in query processing.'
+        }
+      },
+      {
+        title: 'Join Algorithms',
+        tag: 'Joins',
+        content: `<p><strong>Simple NLJ (Nested Loop Join)</strong>: For each tuple in r, scan ALL of s.</p>
+        <p style="margin-top:6px;"><strong>Block NLJ (BNLJ)</strong>: For each BLOCK of r, scan all blocks of s. Much better!</p>
+        <p style="margin-top:6px;"><strong>Index NLJ</strong>: Use an index on inner relation to avoid full scans.</p>
+        <p style="margin-top:6px;"><strong>Sort-Merge Join</strong>: Sort both relations, then merge. Great when inputs are already sorted.</p>
+        <p style="margin-top:6px;"><strong>Hash Join</strong>: Partition both relations by hash, then probe. Optimal for equal-size relations.</p>`,
+        formula: 'NLJ Cost:  br + nr × bs\nBNLJ Cost: br + ⌈br/(B-2)⌉ × bs\nMerge Join: BR + BS\nHash Join:  3 × (BR + BS)',
+        quiz: {
+          q: 'With r=5000 blocks, s=400 blocks, B=52 buffers — BNLJ gives 45,000 transfers. NLJ gives 20,005,000. Why use BNLJ?',
+          opts: ['BNLJ is harder to implement', 'BNLJ processes blocks not tuples, reducing redundant s scans by ~444x', 'NLJ is always better', 'They produce different results'],
+          ans: 1,
+          feedback: '✅ BNLJ processes entire blocks at once! Instead of re-scanning s for each tuple in r (nr times), it re-scans s for each BLOCK of r (br/(B-2) times). With 52 buffers: 444x fewer operations!'
+        }
+      },
+      {
+        title: 'Heuristic vs Cost-Based Optimization',
+        tag: 'Strategies',
+        content: `<p><strong>Heuristic (Rule-Based)</strong>: Apply transformation rules known to improve plans:</p>
+        <p style="margin-top:6px;">• Push selections DOWN (filter early, reduce rows)<br>• Push projections DOWN (reduce column width early)<br>• Most restrictive selection first<br>• Replace Cartesian products with joins</p>
+        <p style="margin-top:10px;"><strong>Cost-Based</strong>: Estimate cost of every candidate plan using statistics (table sizes, histograms). Pick the minimum cost plan. Used by PostgreSQL, Oracle, SQL Server.</p>`,
+        quiz: {
+          q: 'Why does the optimizer prefer to perform selection (WHERE clause) BEFORE joining tables?',
+          opts: ['Joins are invalid before selection', 'Selection reduces row count early, making the join work on fewer tuples', 'WHERE clauses need join data', 'No reason — order doesn\'t matter'],
+          ans: 1,
+          feedback: '✅ "Push selections down" is a key heuristic! If you filter BEFORE joining, the join operates on fewer rows → dramatically less work. Example: filter 5000→400 rows, then join those 400 instead of all 5000.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'sort',
+    icon: '🔀',
+    title: 'External Sort',
+    desc: 'Sorting data larger than RAM',
+    color: '#8b5cf6',
+    sections: [
+      {
+        title: 'Why External Sorting?',
+        tag: 'Problem',
+        content: `<p>Database tables are often <strong>much larger than available RAM</strong>. We can't load everything into memory to sort it.</p>
+        <p style="margin-top:10px;">External Merge Sort solves this by sorting chunks that FIT in RAM, writing sorted "runs" to disk, then merging them.</p>
+        <p style="margin-top:10px;">Needed for: ORDER BY, Sort-Merge Join, GROUP BY, DISTINCT, set operations.</p>`,
+        quiz: {
+          q: 'Why can\'t we just use quicksort for database sorting?',
+          opts: ['Quicksort is too slow', 'Database tables are often larger than RAM — all data can\'t fit in memory', 'Quicksort gives wrong results on databases', 'Databases don\'t need sorting'],
+          ans: 1,
+          feedback: '✅ RAM is limited! A database table might be 500GB while RAM is 16GB. We need algorithms that can sort data stored primarily on disk — that\'s External Merge Sort.'
+        }
+      },
+      {
+        title: 'External Merge Sort — Two Phases',
+        tag: 'Algorithm',
+        content: `<p><strong>Phase 1 — Run Generation:</strong></p>
+        <p>Read B blocks into RAM → sort in memory → write sorted "run" to disk. Repeat until all data processed.</p>
+        <p style="margin-top:4px;">Result: ⌈br/B⌉ sorted runs on disk. Cost: 2br block transfers</p>
+        <p style="margin-top:12px;"><strong>Phase 2 — Merge Phase:</strong></p>
+        <p>Use B-1 input buffers + 1 output buffer to merge up to (B-1) runs simultaneously. Repeat until 1 sorted run remains.</p>`,
+        formula: 'Total Cost = 2br × (⌈log(B-1)(br/B)⌉ + 1) block transfers\n\nPhase 1: 2br (read all + write all runs)\nPhase 2: 2br per merge pass',
+        quiz: {
+          q: 'In Phase 1 with B=3 buffer pages, we can sort how many pages per run?',
+          opts: ['1 page', '2 pages', '3 pages', '6 pages'],
+          ans: 2,
+          feedback: '✅ B=3 means we load 3 blocks into memory, sort them, write one sorted run of 3 pages. Each run = B pages in size.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'transform',
+    icon: '🔧',
+    title: 'Relational Algebra Transforms',
+    desc: 'Equivalence rules for optimization',
+    color: '#ec4899',
+    sections: [
+      {
+        title: 'Equivalence Rules',
+        tag: 'Transformations',
+        content: `<p>The optimizer uses mathematical equivalences to rewrite relational algebra expressions into cheaper but equivalent forms.</p>
+        <p style="margin-top:12px;"><strong>Rule 1 — Cascade of σ:</strong><br>A combined selection can be split into individual selections:</p>
+        <p style="margin-top:4px;padding:10px;background:rgba(236,72,153,0.08);border-radius:8px;font-family:monospace;font-size:13px;">σ(θ1∧θ2)(E) = σθ1(σθ2(E))</p>
+        <p style="margin-top:12px;"><strong>Rule 2 — Commutativity of σ:</strong><br>Order of selections doesn't matter:</p>
+        <p style="margin-top:4px;padding:10px;background:rgba(236,72,153,0.08);border-radius:8px;font-family:monospace;font-size:13px;">σθ1(σθ2(E)) = σθ2(σθ1(E))</p>
+        <p style="margin-top:12px;"><strong>Rule 3 — Cascade of Π (Projection):</strong><br>Only the outermost projection matters:</p>
+        <p style="margin-top:4px;padding:10px;background:rgba(236,72,153,0.08);border-radius:8px;font-family:monospace;font-size:13px;">ΠL1(ΠL2(...(ΠLn(E))...)) = ΠL1(E)</p>`,
+        analogy: '🎯 Commutativity: filtering by "age > 18" then "city = Mumbai" gives the same result as filtering by city first, then age. The optimizer picks whichever order filters MORE data first!',
+        quiz: {
+          q: 'You have Π_Name(Π_ANO,Name(Customer)). Using the cascade rule, this simplifies to:',
+          opts: ['Π_ANO,Name(Customer)', 'Π_Name(Customer)', 'σ_Name(Customer)', 'Cannot be simplified'],
+          ans: 1,
+          feedback: '✅ Only the outermost projection matters! Π_Name(Π_ANO,Name(Customer)) = Π_Name(Customer). The inner projection that kept ANO is unnecessary since the outer one only keeps Name anyway.'
+        }
+      }
+    ]
+  }
+];
+
+function goHome() {
+  document.getElementById('homeView').classList.remove('hidden');
+  document.getElementById('lessonView').classList.remove('active');
+  document.getElementById('lessonView').style.display = 'none';
+  document.getElementById('homeView').style.display = '';
+}
+
+function openModule(idx) {
+  currentModule = idx;
+  currentSectionIdx = 0;
+  const mod = modules[idx];
+  document.getElementById('lessonTitle').textContent = mod.icon + ' ' + mod.title;
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('lessonView').style.display = 'block';
+  renderSectionNav(mod);
+  renderSection(mod, 0);
+}
+
+function renderSectionNav(mod) {
+  const nav = document.getElementById('sectionNav');
+  nav.innerHTML = mod.sections.map((s, i) =>
+    `<button class="snav-btn ${i===0?'active':''}" onclick="renderSection(modules[currentModule],${i});highlightNav(${i})">${i+1}. ${s.title}</button>`
+  ).join('');
+}
+
+function highlightNav(i) {
+  document.querySelectorAll('.snav-btn').forEach((b,idx) => b.classList.toggle('active', idx===i));
+  currentSectionIdx = i;
+}
+
+function renderSection(mod, idx) {
+  const s = mod.sections[idx];
+  currentSectionIdx = idx;
+  highlightNav(idx);
+  const el = document.getElementById('lessonContent');
+
+  let html = `<div class="content-section" style="animation-delay:0s">
+    <div class="section-tag">${s.tag || 'Lesson'}</div>
+    <div class="section-heading">${s.title}</div>
+    <div class="section-body">${s.content || ''}</div>`;
+
+  if (s.analogy) {
+    html += `<div class="analogy-box"><div class="label">💡 ANALOGY</div>${s.analogy}</div>`;
+  }
+
+  if (s.comparison) {
+    html += `<div class="comparison-grid">
+      <div class="cmp-col" style="border-left:3px solid var(--accent1)">
+        <h4>${s.comparison.left.title}</h4>
+        <ul>${s.comparison.left.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+      <div class="cmp-col" style="border-left:3px solid var(--accent2)">
+        <h4>${s.comparison.right.title}</h4>
+        <ul>${s.comparison.right.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+      </div>
+    </div>`;
+  }
+
+  if (s.formula) {
+    html += `<div class="formula-box">${s.formula.replace(/\n/g,'<br>')}</div>`;
+  }
+
+  if (s.timeline) {
+    html += `<div class="timeline">`;
+    s.timeline.forEach(t => {
+      html += `<div class="tl-item"><div class="tl-dot">${t.n}</div><div class="tl-text"><strong>${t.label}</strong> — ${t.text}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+
+  if (s.cards) {
+    html += `<div class="content-section" style="animation-delay:0.1s">
+      <div class="section-tag">🃏 FLIP CARDS</div>
+      <div class="flip-hint">Tap each card to reveal the explanation</div>
+      <div class="flip-deck">`;
+    s.cards.forEach((c, i) => {
+      html += `<div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-inner">
+          <div class="flip-front">${c.front}</div>
+          <div class="flip-back">${c.back}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (s.quiz) {
+    const qid = `q_${idx}`;
+    html += `<div class="quiz-section" style="animation-delay:0.15s">
+      <div class="quiz-label">🧠 CHECK YOUR UNDERSTANDING</div>
+      <div class="quiz-q">${s.quiz.q}</div>
+      <div class="quiz-options" id="opts_${qid}">
+        ${s.quiz.opts.map((o, oi) =>
+          `<button class="quiz-opt" onclick="checkAnswer(${oi},${s.quiz.ans},'${qid}','${escStr(s.quiz.feedback)}')">${o}</button>`
+        ).join('')}
+      </div>
+      <div class="quiz-feedback" id="fb_${qid}"></div>
+      <button class="next-btn" id="next_${qid}" onclick="nextOrFinish()">
+        ${idx < mod.sections.length - 1 ? 'Next Section →' : '🎉 Complete Module'}
+      </button>
+    </div>`;
+  }
+
+  el.innerHTML = html;
+  el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function escStr(s) { return s.replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function checkAnswer(chosen, correct, qid, feedback) {
+  const opts = document.querySelectorAll(`#opts_${qid} .quiz-opt`);
+  opts.forEach(o => o.disabled = true);
+  opts[correct].classList.add('correct');
+  if (chosen !== correct) opts[chosen].classList.add('wrong');
+
+  const fb = document.getElementById(`fb_${qid}`);
+  fb.textContent = chosen === correct ? feedback : '❌ Not quite — see the correct answer highlighted above. ' + feedback;
+  fb.className = `quiz-feedback show ${chosen === correct ? 'ok' : 'no'}`;
+
+  if (chosen === correct) {
+    score += 10;
+    document.getElementById('scoreDisplay').textContent = score;
+  }
+
+  document.getElementById(`next_${qid}`).classList.add('show');
+  updateProgress();
+}
+
+function nextOrFinish() {
+  const mod = modules[currentModule];
+  if (currentSectionIdx < mod.sections.length - 1) {
+    renderSection(mod, currentSectionIdx + 1);
+  } else {
+    completedModules.add(currentModule);
+    score += 20;
+    document.getElementById('scoreDisplay').textContent = score;
+    updateProgress();
+    renderModuleGrid();
+    goHome();
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.module-card');
+      if (cards[currentModule]) {
+        cards[currentModule].style.background = 'rgba(16,185,129,0.1)';
+        cards[currentModule].style.borderColor = 'rgba(16,185,129,0.4)';
+      }
+    }, 100);
+  }
+}
+
+function updateProgress() {
+  const total = modules.reduce((a,m) => a + m.sections.length, 0);
+  const done = completedModules.size;
+  const pct = Math.min(100, Math.round((done / modules.length) * 100));
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function renderModuleGrid() {
+  const colors = modules.map(m => m.color);
+  document.getElementById('moduleGrid').innerHTML = modules.map((m, i) => `
+    <div class="module-card ${completedModules.has(i)?'done':''}" 
+         style="--accent-color:${m.color}" onclick="openModule(${i})">
+      <div class="module-icon">${m.icon}</div>
+      <div class="module-title">${m.title}</div>
+      <div class="module-desc">${m.desc}</div>
+      <div class="module-count">${m.sections.length} section${m.sections.length>1?'s':''} · quiz included</div>
+    </div>
+  `).join('');
+}
+
+renderModuleGrid();
+</script>
+</body>
+</html>
